@@ -1,0 +1,8 @@
+apiVersion: v2
+name: fleet-agent
+type: application
+version: 0.8.0
+dependencies:
+  - name: fleet-agent
+    version: 0.8.0
+    repository: https://rancher.github.io/fleet-helm-charts/
