@@ -1,0 +1,62 @@
+{{- $target := .Values.target -}}
+{{- $releaseName := default .Release.Name .Values.appname -}}
+{{- $image := .Values.image -}}
+{{- $imagepullsecret := .Values.imagePullSecrets }}
+{{- $hassecret := .Values.hasSecret -}}
+
+{{- if hasKey .Values .Values.target }}
+{{- range $key, $value := .Values }}
+{{- if eq $key $target }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $releaseName }}
+  annotations:
+    keel.sh/policy: 'force'
+    keel.sh/trigger: 'poll'
+    keel.sh/match-tag: true
+spec:
+  replicas: {{ default "1" $value.replicas }}
+  selector:
+    matchLabels:
+      instance: {{ $releaseName }}
+  template:
+    metadata:
+      labels:
+        instance: {{ $releaseName }}
+    spec:
+    {{- with $imagepullsecret }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 6 }}
+    {{- end }}
+      serviceAccountName: {{ $releaseName }}
+      containers:
+        image: {{ $image }}:{{ $value.tag }}
+        imagePullPolicy: Always
+        name: {{ $releaseName }}
+        ports:
+          - containerPort: {{ default "80" $value.service.port }}
+            name: http
+            protocol: TCP
+        envFrom:
+          {{- if $value.configuration }}
+          - configMapRef:
+              name: {{ $releaseName }}
+          {{- end }}
+          {{- if $hassecret }}
+          - secretRef:
+              name: {{ $releaseName }}
+          {{- end }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: kubernetes.io/hostname
+              labelSelector:
+                matchLabels:
+                  appli.kubernetes.io/name: {{ $releaseName }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+
+

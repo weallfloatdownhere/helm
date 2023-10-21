@@ -1,0 +1,26 @@
+# going to be auto provisioned by the appset
+target: dev
+# going to be auto provisioned by the appset
+appname: default
+# going to be auto provisioned by the appset, it specify if the deployment has secret
+hasSecret: true
+# by default, the chart using a regcred secret to pull the image
+imagePullSecrets:
+  - name: regcred
+
+# image url
+image: http://registry.io/my-image
+
+dev:
+  tag: dev
+  replicas: 1
+  configuration:
+    HELLO: World
+  service: 
+    type: ClusterIP
+    port: 80
+qa:
+  tag: qa
+  replicas: 1
+  configuration:
+    HELLO: World2

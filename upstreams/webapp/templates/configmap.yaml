@@ -1,0 +1,16 @@
+{{- $target := .Values.target -}}
+{{- $releaseName := default .Release.Name .Values.appname -}}
+{{- if hasKey .Values .Values.target }}
+{{- range $key, $value := .Values }}
+{{- if eq $key $target }}
+{{- with $value.configuration }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ $releaseName }}
+data:
+{{ toYaml . | indent 2 }}
+{{- end -}}
+{{- end }}
+{{- end }}
+{{- end }}
